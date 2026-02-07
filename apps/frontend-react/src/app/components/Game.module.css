@@ -1,0 +1,219 @@
+.gameContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100vh; /* Full screen */
+  overflow: hidden; /* Hide scrollbars */
+  padding: 0;
+  background-color: #fef0f0;
+  position: relative;
+}
+
+.controls {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.button:hover:not(:disabled) {
+  background-color: #b71c1c;
+}
+
+/* The Viewport (Camera Window) */
+.trackViewport {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center; /* Center track vertically */
+  /* Remove gradient, we use image now */
+  background-color: #87CEEB; 
+}
+
+/* The World (Moves inside Viewport) */
+.trackWorld {
+  position: absolute;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  
+  /* Background Image Logic */
+  background-image: url('/assets/race-background/race.png');
+  background-repeat: repeat-x;
+  /* "Zoom" effect: Make background fill height or even larger */
+  background-size: auto 100%; 
+  background-position: left center;
+}
+
+.laneContainer {
+  position: absolute;
+  top: 60%; /* Adjusted to be slightly lower to fit typical road perspective */
+  transform: translateY(-50%);
+  width: 100%;
+}
+
+.finishLine {
+  position: absolute;
+  top: -200px; /* Extend up */
+  bottom: -200px; /* Extend down */
+  width: 20px;
+  background-image: repeating-linear-gradient(
+    0deg,
+    #000,
+    #000 20px,
+    #fff 20px,
+    #fff 40px
+  );
+  z-index: 1;
+  border: 2px solid white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.lane {
+  position: relative;
+  height: 60px; /* Reduced from 120px to fit 5 horses on road */
+}
+
+/* The actual ground visual per lane */
+.laneGround {
+  display: none; /* Hide debug lines, use real background */
+}
+
+.horse {
+  position: absolute;
+  /* Frame size gốc là 128x128, ta set box bằng đúng size frame để background-position chuẩn */
+  width: 128px; 
+  height: 128px;
+  /* Sau đó scale xuống kích thước mong muốn (ví dụ 80px -> scale ~0.6) */
+  transform-origin: bottom center; 
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* Align text/money to top/bottom correctly */
+  
+  z-index: 10;
+  will-change: transform;
+}
+
+/* Class mới cho Sprite Animation */
+.horseSprite {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: 512px 1152px; /* Kích thước gốc của Sprite Sheet */
+    
+    /* Animation chạy */
+    animation: runAnimation 0.6s steps(4) infinite;
+}
+
+@keyframes runAnimation {
+    from { background-position-x: 0; }
+    to { background-position-x: -512px; } /* Di chuyển chính xác 512px (4 frames x 128px) */
+}
+
+.horseImage {
+    display: none; /* Hide old img tag */
+}
+
+.horseName {
+  font-size: 14px;
+  color: white;
+  background: rgba(0,0,0,0.6);
+  padding: 4px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  position: absolute;
+  top: -10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  z-index: 20;
+}
+
+.money {
+  font-size: 12px;
+  color: #FFD700;
+  font-weight: bold;
+  position: absolute;
+  bottom: -20px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.luckyMoney {
+  position: absolute;
+  width: 40px;
+  height: 50px;
+  background-color: #D32F2F;
+  border: 2px solid #FFD700;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFD700;
+  font-weight: bold;
+  z-index: 5;
+  font-size: 24px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.results {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  width: 80%;
+  max-width: 500px;
+  z-index: 200;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  backdrop-filter: blur(5px);
+  text-align: center;
+}
+
+.rankItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1em;
+}
+
+.rank1 { color: #d32f2f; font-weight: 900; font-size: 1.4em; }
+.rank2 { color: #1976d2; font-weight: 800; font-size: 1.2em; }
+.rank3 { color: #388e3c; font-weight: 700; font-size: 1.1em; }
+
+/* Terrain Debug Lines (Optional) */
+.terrainPath {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 0;
+}

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend-api:
+    build:
+      context: .
+      dockerfile: apps/backend-api/Dockerfile
+    container_name: backend-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - tet-holiday-network
+
+  frontend-react:
+    build:
+      context: .
+      dockerfile: apps/frontend-react/Dockerfile
+    container_name: frontend-react
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-api
+    networks:
+      - tet-holiday-network
+
+networks:
+  tet-holiday-network:
+    driver: bridge
