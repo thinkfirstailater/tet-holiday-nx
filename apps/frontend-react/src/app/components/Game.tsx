@@ -27,11 +27,11 @@ const getRandomLuckyMoney = () => {
 };
 
 const INITIAL_HORSES: Horse[] = [
-  { id: 1, name: 'Xích Thố', color: '#FF5722', icon: '🐎', image: '/assets/Horses/1.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
-  { id: 2, name: 'Đích Lư', color: '#FFC107', icon: '🦄', image: '/assets/Horses/2.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
-  { id: 3, name: 'Tuyệt Ảnh', color: '#2196F3', icon: '🦓', image: '/assets/Horses/3.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
-  { id: 4, name: 'Bạch Long', color: '#EEEEEE', icon: '🐐', image: '/assets/Horses/4.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
-  { id: 5, name: 'Ô Vân', color: '#212121', icon: '🐈', image: '/assets/Horses/5.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
+  { id: 1, name: 'Xích Thố', color: '#FF5722', icon: '🐎', image: '/assets/horses/1.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
+  { id: 2, name: 'Đích Lư', color: '#FFC107', icon: '🦄', image: '/assets/horses/2.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
+  { id: 3, name: 'Tuyệt Ảnh', color: '#2196F3', icon: '🦓', image: '/assets/horses/3.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
+  { id: 4, name: 'Bạch Long', color: '#EEEEEE', icon: '🐐', image: '/assets/horses/4.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
+  { id: 5, name: 'Ô Vân', color: '#212121', icon: '🐈', image: '/assets/horses/5.png', position: 0, speed: 0, money: 0, finished: false, rank: null },
 ];
 
 export const Game: React.FC = () => {
