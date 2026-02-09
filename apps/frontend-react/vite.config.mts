@@ -10,10 +10,12 @@ export default defineConfig(() => ({
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : 4200,
     host: '0.0.0.0',
+    allowedHosts: true as const,
   },
   preview: {
     port: process.env.PORT ? Number(process.env.PORT) : 4200,
     host: '0.0.0.0',
+    allowedHosts: true as const,
   },
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
