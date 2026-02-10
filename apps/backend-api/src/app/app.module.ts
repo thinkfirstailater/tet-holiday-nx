@@ -9,6 +9,7 @@ import { LoggingInterceptor } from '../utils/interceptor';
 import { CustomValidationPipe } from '../utils/pipe/validation.pipe';
 import { StorageModule } from '../adapter/storage/storage.module';
 import { UserApiModule } from '../adapter/api/user.module';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserApiModule } from '../adapter/api/user.module';
     }),
     StorageModule,
     UserApiModule,
+    GameModule,
   ],
   controllers: [AppController],
   providers: [

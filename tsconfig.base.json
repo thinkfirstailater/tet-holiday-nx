@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@libs/models": ["libs/shared-models/src/index.ts"]
+      "@libs/models": ["libs/shared-models/src/index.ts"],
+      "@tet-holiday/game-core": ["libs/game-core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
