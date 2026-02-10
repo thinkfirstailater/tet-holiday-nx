@@ -4,33 +4,19 @@ import styles from './Game.module.css';
 import { Horse, HorseData } from './Horse';
 import { RaceBackground } from './RaceBackground';
 import { RacePath } from './RacePath';
-const TRACK_LENGTH = 3000; // Phóng lớn chiều dài đường đua để đạt ~15s
-const VIEWPORT_WIDTH = 900;
-const VIEWPORT_HEIGHT = 600;
-const HORSE_START_X = 100;
-const WIN_X = 2800;
-const RACE_DURATION = 25; // Giây
-const BASE_SPEED = (WIN_X - HORSE_START_X) / RACE_DURATION;
-const BASE_GAP_HORSE_X = 50
-const BASE_GAP_HORSE_Y = 20
-const MIDDLE_HORSE_START_RUNNING_X = 800;
-const MIDDLE_HORSE_START_RUNNING_Y = 1250; // Điều chỉnh lại Y để khớp với hệ tọa độ (0,0) của ảnh đã zoom (Dịch xuống 50px)
+import { GameConstants } from './GameConstants';
+
+const HORSE_START_X = RacePath.SVG_START_X; // Sync with SVG Path
+const MIDDLE_HORSE_START_RUNNING_X = HORSE_START_X; // Sync with SVG Path
 
 const DEBUG_BACKGROUND_MODE = false; // Chế độ debug background
 
-const LUCKY_MONEY_VALUES = [10, 20, 50]; // Chỉ giữ 3 mệnh giá
-// Hàm tính hạn ngạch (quota) cho 15 bao
-// 10k: 6 bao (~40%)
-// 20k: 8 bao (~53%)
-// 50k: 1 bao (Unique - 6.6%)
-const GET_LUCKY_MONEY_QUOTAS = (N: number) => [6, 8, 1]; 
-
 const HORSES_DATA: HorseData[] = [
-    { id: 1, positionIndex: -2, name: 'Xích Thố', image: '/assets/horses/Horse_fullcolor_black_barebackriding.png', color: '#FF5722', baseLaneY: MIDDLE_HORSE_START_RUNNING_Y - BASE_GAP_HORSE_Y * 2, startX: MIDDLE_HORSE_START_RUNNING_X + BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 2, positionIndex: -1, name: 'Đích Lư', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#FFC107', baseLaneY: MIDDLE_HORSE_START_RUNNING_Y - BASE_GAP_HORSE_Y, startX: MIDDLE_HORSE_START_RUNNING_X + BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 3, positionIndex: 0, name: 'Tuyệt Ảnh', image: '/assets/horses/Horse_fullcolor_white_barebackriding.png', color: '#2196F3', baseLaneY: MIDDLE_HORSE_START_RUNNING_Y, startX: MIDDLE_HORSE_START_RUNNING_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 4, positionIndex: 1, name: 'Bạch Long', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: MIDDLE_HORSE_START_RUNNING_Y + BASE_GAP_HORSE_Y, startX: MIDDLE_HORSE_START_RUNNING_X - BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 5, positionIndex: 2, name: 'Ô Vân', image: '/assets/horses/Horse_fullcolor_paint_beige_barebackriding.png', color: '#212121', baseLaneY: MIDDLE_HORSE_START_RUNNING_Y + BASE_GAP_HORSE_Y * 2, startX: MIDDLE_HORSE_START_RUNNING_X - BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 1, positionIndex: -2, name: 'Xích Thố', image: '/assets/horses/Horse_fullcolor_black_barebackriding.png', color: '#FF5722', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 2, positionIndex: -1, name: 'Đích Lư', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#FFC107', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 3, positionIndex: 0, name: 'Tuyệt Ảnh', image: '/assets/horses/Horse_fullcolor_white_barebackriding.png', color: '#2196F3', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 4, positionIndex: 1, name: 'Bạch Long', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 5, positionIndex: 2, name: 'Ô Vân', image: '/assets/horses/Horse_fullcolor_paint_beige_barebackriding.png', color: '#212121', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
 ];
 
 
@@ -61,6 +47,9 @@ export const GamePhaser: React.FC = () => {
             private soundEnd?: Phaser.Sound.BaseSound;
             private soundCollect?: Phaser.Sound.BaseSound;
             private lastCollectTime = 0; // Debounce collect sound
+            private focusedHorse?: Horse; // Ngựa được chọn để focus camera
+            private currentFollowTarget?: Phaser.GameObjects.GameObject; // Target hiện tại của Camera
+
 
             constructor() {
                 super('MainScene');
@@ -68,7 +57,6 @@ export const GamePhaser: React.FC = () => {
 
             preload() {
                 this.load.image('bg', '/assets/race-background/race.png');
-                this.load.image('bg-lane', '/assets/race-background/race-lane.png');
                 
                 // Load 8 mẫu bao lì xì
                 for (let i = 1; i <= 8; i++) {
@@ -103,35 +91,88 @@ export const GamePhaser: React.FC = () => {
                     graphics.generateTexture('flare', 20, 20);
                 }
 
-                // Thế giới rộng hơn để đua
-                this.physics.world.setBounds(0, 0, TRACK_LENGTH, VIEWPORT_HEIGHT);
+                // Khởi tạo background thông qua component riêng
+                // Truyền tạm 0 vào constructor vì centerY sẽ được tính sau
+                this.raceBackground = new RaceBackground(this, 0);
 
-                // Khởi tạo background thông qua component riêng, căn giữa theo làn ngựa chính
-                this.raceBackground = new RaceBackground(this, TRACK_LENGTH, VIEWPORT_HEIGHT, MIDDLE_HORSE_START_RUNNING_Y);
+                // Cập nhật World Bounds theo kích thước thật của Background
+                const bgWidth = this.raceBackground.width;
+                const bgHeight = this.raceBackground.height;
+                
+                // --- LOGIC ĐỘNG: Cập nhật thông số đường đua theo ảnh nền ---
+                const trackLength = bgWidth;
+                // WinX should match the end of the SVG Path to ensure horses stop at the finish line
+                const winX = RacePath.SVG_END_X; 
+                
+                // Tính toán Center Y động dựa trên chiều cao background (Khoảng 65% từ trên xuống)
+                // Lưu ý: RacePath có tọa độ Y riêng (khoảng 400-500). 
+                // Nếu dynamicCenterY khác xa so với Path Y, laneOffset sẽ lớn.
+                const dynamicCenterY = bgHeight * 0.65;
+                
+                // Cập nhật RacePath config
+                RacePath.setConfig(winX, dynamicCenterY);
+                
+                // Tính lại tốc độ cơ bản (Base Speed)
+                // Quãng đường = Đích - Xuất phát (lấy trung bình khoảng 800)
+                const runDistance = winX - MIDDLE_HORSE_START_RUNNING_X;
+                
+                if (runDistance <= 0) {
+                    console.error(`[CRITICAL] Background width (${bgWidth}px) is too small! Must be > ${MIDDLE_HORSE_START_RUNNING_X + 200}px`);
+                }
+
+                const baseSpeed = Math.max(0, runDistance / GameConstants.RACE_DURATION);
+                
+                console.log(`Dynamic Track Config: Width=${bgWidth}, Height=${bgHeight}, WinX=${winX}, CenterY=${dynamicCenterY}, Speed=${baseSpeed}`);
+                
+                if (bgWidth > RacePath.SVG_END_X + 100) {
+                     console.warn(`[WARNING] Background width (${bgWidth}) is much larger than SVG Path End (${RacePath.SVG_END_X}). The path might be too short or scaled incorrectly.`);
+                }
+
+                // Set Physics World Bounds khớp với Background Size
+                this.physics.world.setBounds(0, 0, bgWidth, bgHeight);
 
                 if (DEBUG_BACKGROUND_MODE) {
                     // Chế độ debug: Zoom out để nhìn toàn cảnh, không khởi tạo game logic
-                    const zoomLevel = VIEWPORT_WIDTH / (TRACK_LENGTH * 1.5); // Ước lượng zoom để vừa chiều ngang
-                    this.cameras.main.setZoom(zoomLevel); // Zoom nhỏ lại
-                    this.cameras.main.scrollX = 1500; // Ra giữa map
-                    this.cameras.main.scrollY = 1000;
+                    // Zoom để vừa chiều ngang background
+                    const zoomLevel = GameConstants.VIEWPORT_WIDTH / bgWidth; 
+                    this.cameras.main.setZoom(zoomLevel); 
+                    this.cameras.main.centerOn(bgWidth / 2, bgHeight / 2);
                     
-                    console.log('DEBUG MODE: Background View Only');
+                    console.log('DEBUG MODE: Background View Only. Size:', bgWidth, bgHeight);
                     return; // Dừng tại đây, không init ngựa hay logic game
                 }
 
                 this.luckyMoneyGroup = this.add.group();
 
-                this.initHorses();
+                this.initHorses(baseSpeed, dynamicCenterY);
 
-                // Mở rộng giới hạn camera (Bounds) để cho phép scrollY có thể xích xuống (giá trị dương)
-                this.cameras.main.setBounds(0, -1000, TRACK_LENGTH, VIEWPORT_HEIGHT + 2000);
+                // Set default Zoom
+                this.cameras.main.setZoom(GameConstants.CAMERA_ZOOM_LEVEL);
+
+                // Auto Zoom for Mobile: Nếu màn hình nhỏ, có thể giảm bớt zoom nếu cần
+                // Nhưng user yêu cầu zoom to, nên ưu tiên giữ zoom to
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    this.cameras.main.setZoom(GameConstants.CAMERA_ZOOM_LEVEL * 0.8); // Giảm nhẹ cho mobile
+                }
+
+                // QUAN TRỌNG: Mở rộng giới hạn camera (Bounds) để cho phép camera di chuyển thoải mái
+                // Set bounds rộng hơn background một chút để có thể center vào các cạnh
+                const padding = 1000;
+                this.cameras.main.setBounds(-padding, -padding, bgWidth + padding * 2, bgHeight + padding * 2);
+
+                // Set camera position immediately to the middle horse to ensure visibility on load
+                const middleHorse = this.horses.find(h => h.horseData.positionIndex === 0);
+                if (middleHorse) {
+                    // Sử dụng centerOn để Phaser tự động tính toán scrollX/scrollY dựa trên Zoom hiện tại
+                    this.cameras.main.centerOn(middleHorse.x, middleHorse.y);
+                }
                 
                 this.game.events.on('START_RACE', this.startRace, this);
                 this.game.events.on('RESET_RACE', this.resetRace, this);
 
                 // Vẽ debug path nếu cần (Mặc định ẩn, bật lên nếu user muốn kiểm tra)
-                // this.drawDebugPath();
+                this.drawDebugPath();
 
                 // Init Sounds
                 // Lưu tham chiếu sound vào biến class để tránh bị GC
@@ -145,51 +186,69 @@ export const GamePhaser: React.FC = () => {
                         console.log('Audio unlocked');
                     });
                 }
+
+                // Interaction: Click vào ngựa để focus camera
+                this.input.on('gameobjectdown', (pointer: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.GameObject) => {
+                    if (gameObject instanceof Horse) {
+                        this.focusedHorse = gameObject as Horse;
+                    }
+                });
+
+                // Click vùng trống để reset về Auto Focus (Leader)
+                this.input.on('pointerdown', (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+                    const clickedHorse = currentlyOver.some(obj => obj instanceof Horse);
+                    if (!clickedHorse) {
+                        this.focusedHorse = undefined;
+                    }
+                });
             }
 
             private drawDebugPath() {
+                if (!GameConstants.DEBUG_PATH) return;
                 if (this.debugGraphics) this.debugGraphics.clear();
                 this.debugGraphics = this.add.graphics();
-                this.debugGraphics.lineStyle(4, 0xff0000, 0.5);
                 
-                const path = RacePath.createPath();
-                path.draw(this.debugGraphics);
+                // Draw all 5 lanes to verify alignment
+                const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0x00ffff];
+                
+                console.log('--- LANE LENGTHS DEBUG ---');
+                for (let i = 0; i < 5; i++) {
+                    this.debugGraphics.lineStyle(4, colors[i], 0.5);
+                    const path = RacePath.getPathForLane(i);
+                    path.draw(this.debugGraphics);
+                    console.log(`Lane ${i} (ID ${i-2}): ${path.getLength().toFixed(2)} px`);
+                }
+                console.log('--------------------------');
             }
 
-            private initHorses() {
+            private initHorses(baseSpeed: number, centerY: number) {
                 this.horses.forEach(h => h.destroy());
                 this.horses = [];
                 
                 HORSES_DATA.forEach((h, index) => {
+                    // Tính toán baseLaneY dựa trên centerY động
+                    const laneY = centerY + (h.positionIndex * GameConstants.BASE_GAP_HORSE_Y);
+                    
                     const hData: HorseData = {
                         ...h,
-                        speed: BASE_SPEED + Phaser.Math.Between(-20, 20),
-                        targetSpeed: BASE_SPEED,
+                        baseLaneY: laneY, // Override baseLaneY
+                        // startX giữ nguyên logic cũ hoặc cũng cần scale?
+                        // Tạm thời giữ nguyên logic startX quanh MIDDLE_HORSE_START_RUNNING_X
+                        // Nếu muốn dynamic startX thì cần logic thêm.
+                        speed: baseSpeed + Phaser.Math.Between(-20, 20),
+                        targetSpeed: baseSpeed,
                     };
-
-                    const horse = new Horse(this, hData.startX, hData.baseLaneY, hData, BASE_SPEED);
+                    
+                    const horse = new Horse(this, hData.startX, laneY, hData, baseSpeed);
                     this.horses.push(horse);
                 });
-        }
+            }
 
             private getLeadingHorse() {
                 return this.horses.reduce((prev, curr) => (curr.x > prev.x ? curr : prev), this.horses[0]);
             }
 
             update(time: number, delta: number) {
-                if (!this.raceStarted || this.raceFinished) {
-                    // Khi chưa bắt đầu hoặc đã kết thúc, vẫn giữ camera ở vị trí ngựa chính giữa
-                    const middleHorse = this.horses.find(h => h.horseData.positionIndex === 0);
-                    if (middleHorse) {
-                        this.cameras.main.scrollX = middleHorse.x - VIEWPORT_WIDTH / 2;
-                        this.cameras.main.scrollY = middleHorse.y - VIEWPORT_HEIGHT / 2;
-                    }
-                    return;
-                }
-
-                let allFinished = true;
-                const dt = delta / 1000;
-
                 // Watchdog: Đảm bảo Audio Context luôn chạy
                 const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
                 if (soundManager.context && soundManager.context.state === 'suspended') {
@@ -201,90 +260,117 @@ export const GamePhaser: React.FC = () => {
                      this.soundRunning.play();
                 }
 
-                this.horses.forEach((horse) => {
-                    if (horse.horseData.finished) return;
+                // Game Logic Update
+                if (this.raceStarted && !this.raceFinished) {
+                    let allFinished = true;
+                    const dt = delta / 1000;
 
-                    allFinished = false;
+                    this.horses.forEach((horse) => {
+                        if (horse.horseData.finished) return;
 
-                    // Gọi logic cập nhật của riêng chú ngựa
-                    horse.updateHorse(time, dt);
+                        allFinished = false;
 
-                    // Check về đích (Chỉ gọi một lần khi rank chưa được set)
-                    if (horse.horseData.finished && horse.horseData.rank === 0) {
-                        const rank = this.rankCounter++;
-                        const isWinner = rank === 1;
-                        horse.setFinished(rank, isWinner);
-                    }
+                        // Gọi logic cập nhật của riêng chú ngựa
+                        horse.updateHorse(time, dt);
 
-                    // Va chạm với lì xì - Tối ưu hóa: Dùng Magnet Logic + Distance Check
-                    // Logic mới: Nếu ngựa chạy qua lì xì được assign cho lane của mình -> Auto Magnet
-                    if (!horse.horseData.hasLuckyMoney) {
-                        const hX = horse.x;
-                        const hY = horse.y - 40; 
-                        
-                        this.luckyMoneyGroup.getChildren().forEach((lm: any) => {
-                            if (lm.getData('beingCollected')) return; // Đang được ai đó nhặt rồi
-
-                            // 1. Kiểm tra Magnet (Hút về phía ngựa cùng lane)
-                            const lmLane = lm.getData('laneIndex');
-                            const isSameLane = lmLane === horse.horseData.positionIndex;
+                        // Check về đích (Chỉ gọi một lần khi rank chưa được set)
+                        if (horse.horseData.finished && horse.horseData.rank === 0) {
+                            const rank = this.rankCounter++;
+                            const isWinner = rank === 1;
                             
-                            // Nếu cùng lane và khoảng cách X đủ gần (tầm nhìn xa)
-                            const distSq = (hX - lm.x) ** 2 + (hY - lm.y) ** 2;
-                            
-                            // Magnet Range: 300px (tầm xa) nếu cùng lane, 60px (gần) nếu khác lane
-                            const magnetRangeSq = isSameLane ? 90000 : 3600; 
-
-                            if (distSq < magnetRangeSq) {
-                                // Nếu chưa kích hoạt magnet, kích hoạt ngay
-                                if (!lm.getData('isMagneting')) {
-                                    lm.setData('isMagneting', true);
-                                    lm.setData('targetHorse', horse); // Khóa mục tiêu
-                                }
-                            }
-
-                            // 2. Logic Bay về phía ngựa (Homing Missile)
-                            if (lm.getData('isMagneting') && lm.getData('targetHorse') === horse) {
-                                // Di chuyển LM về phía ngựa
-                                const speed = 15; // Tốc độ bay
-                                const angle = Phaser.Math.Angle.Between(lm.x, lm.y, hX, hY);
-                                lm.x += Math.cos(angle) * speed;
-                                lm.y += Math.sin(angle) * speed;
+                            // Rule: con nào về đích trước sẽ đc nhân đôi số tiền lụm đc
+                            if (isWinner && horse.horseData.money > 0) {
+                                const originalMoney = horse.horseData.money;
+                                horse.horseData.money *= 2;
+                                console.log(`Winner ${horse.horseData.name} doubled money: ${originalMoney} -> ${horse.horseData.money}`);
                                 
-                                // Nếu đã rất gần -> Collect
-                                if (distSq < 1600) { // 40px
-                                    lm.setData('beingCollected', true);
-                                    this.collectLuckyMoney(horse, lm);
-                                }
+                                // Cập nhật text hiển thị tiền (nếu cần)
+                                horse.updateMoneyText();
                             }
-                        });
-                    }
-                });
 
-                // Camera follow mượt mà theo con ngựa chính giữa (positionIndex = 0) theo cả 2 trục
-                const middleHorse = this.horses.find(h => h.horseData.positionIndex === 0);
-                if (middleHorse) {
-                    const targetX = middleHorse.x - VIEWPORT_WIDTH / 2;
-                    const targetY = middleHorse.y - VIEWPORT_HEIGHT / 2;
-                    
-                    this.cameras.main.scrollX = Math.round(Phaser.Math.Linear(this.cameras.main.scrollX, targetX, 0.1));
-                    this.cameras.main.scrollY = Math.round(Phaser.Math.Linear(this.cameras.main.scrollY, targetY, 0.1));
+                            horse.setFinished(rank, isWinner);
+                        }
+
+                        // Va chạm với lì xì - Tối ưu hóa: Dùng Magnet Logic + Distance Check
+                        // Logic mới: Nếu ngựa chạy qua lì xì được assign cho lane của mình -> Auto Magnet
+                        if (!horse.horseData.hasLuckyMoney) {
+                            const hX = horse.x;
+                            const hY = horse.y - 40; 
+                            
+                            this.luckyMoneyGroup.getChildren().forEach((lm: any) => {
+                                if (lm.getData('beingCollected')) return; // Đang được ai đó nhặt rồi
+
+                                // 1. Kiểm tra Magnet (Hút về phía ngựa cùng lane)
+                                const lmLane = lm.getData('laneIndex');
+                                const isSameLane = lmLane === horse.horseData.positionIndex;
+                                
+                                // Nếu cùng lane và khoảng cách X đủ gần (tầm nhìn xa)
+                                const distSq = (hX - lm.x) ** 2 + (hY - lm.y) ** 2;
+                                
+                                // Magnet Range: 300px (tầm xa) nếu cùng lane, 60px (gần) nếu khác lane
+                                const magnetRangeSq = isSameLane ? 90000 : 3600; 
+
+                                if (distSq < magnetRangeSq) {
+                                    // Nếu chưa kích hoạt magnet, kích hoạt ngay
+                                    if (!lm.getData('isMagneting')) {
+                                        lm.setData('isMagneting', true);
+                                        lm.setData('targetHorse', horse); // Khóa mục tiêu
+                                    }
+                                }
+
+                                // 2. Logic Bay về phía ngựa (Homing Missile)
+                                if (lm.getData('isMagneting') && lm.getData('targetHorse') === horse) {
+                                    // Di chuyển LM về phía ngựa
+                                    const speed = 15; // Tốc độ bay
+                                    const angle = Phaser.Math.Angle.Between(lm.x, lm.y, hX, hY);
+                                    lm.x += Math.cos(angle) * speed;
+                                    lm.y += Math.sin(angle) * speed;
+                                    
+                                    // Nếu đã rất gần -> Collect
+                                    if (distSq < 1600) { // 40px
+                                        lm.setData('beingCollected', true);
+                                        this.collectLuckyMoney(horse, lm);
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    if (allFinished) {
+                        this.raceFinished = true;
+                        this.raceStarted = false;
+                        
+                        // Stop running sound and play end sound
+                        if (this.soundRunning && this.soundRunning.isPlaying) {
+                            this.soundRunning.stop();
+                        }
+                        if (this.soundEnd) {
+                            this.soundEnd.play();
+                        }
+
+                        if (this.spawnTimer) this.spawnTimer.remove();
+                        window.dispatchEvent(new CustomEvent('RACE_FINISHED', { detail: this.horses.map(h => h.horseData) }));
+                    }
                 }
 
-                if (allFinished) {
-                    this.raceFinished = true;
-                    this.raceStarted = false;
-                    
-                    // Stop running sound and play end sound
-                    if (this.soundRunning && this.soundRunning.isPlaying) {
-                        this.soundRunning.stop();
-                    }
-                    if (this.soundEnd) {
-                        this.soundEnd.play();
-                    }
+                // Camera Logic: Follow Focus or Leader
+                // Chạy mọi lúc, kể cả khi chưa đua hoặc đã đua xong
+                let targetHorse = this.focusedHorse;
+                
+                // Nếu không có ngựa được chọn, follow ngựa dẫn đầu (Leader)
+                if (!targetHorse && this.horses.length > 0) {
+                    targetHorse = this.getLeadingHorse();
+                }
 
-                    if (this.spawnTimer) this.spawnTimer.remove();
-                    window.dispatchEvent(new CustomEvent('RACE_FINISHED', { detail: this.horses.map(h => h.horseData) }));
+                if (targetHorse) {
+                    // Nếu target thay đổi, cập nhật camera follow
+                    if (this.currentFollowTarget !== targetHorse) {
+                        this.currentFollowTarget = targetHorse;
+                        
+                        // Sử dụng startFollow của Phaser để tự động center vào target
+                        // Lerp 0.1 để camera di chuyển mượt mà
+                        this.cameras.main.startFollow(targetHorse, true, 0.1, 0.1);
+                    }
                 }
             }
 
@@ -300,7 +386,7 @@ export const GamePhaser: React.FC = () => {
                 const value = lm.getData('value') || 10;
                 
                 // Cập nhật thống kê (để debug hoặc hiển thị nếu cần)
-                const valueIndex = LUCKY_MONEY_VALUES.indexOf(value);
+                const valueIndex = GameConstants.LUCKY_MONEY_VALUES.indexOf(value);
                 if (valueIndex !== -1) {
                     this.luckyMoneyPickedCounts[valueIndex]++;
                 }
@@ -334,7 +420,7 @@ export const GamePhaser: React.FC = () => {
                     stroke: '#000000',
                     strokeThickness: 3,
                     fontStyle: 'bold'
-                }).setOrigin(0.5);
+                }).setOrigin(0.5).setDepth(20); // Layer 20: Text Effect
 
                 this.tweens.add({
                     targets: text,
@@ -364,12 +450,19 @@ export const GamePhaser: React.FC = () => {
                 // Chuẩn bị danh sách lì xì sẽ rớt
                 this.prepareLuckyMoneyQueue();
 
-                // Timer rơi lì xì: Rải rác từ giây thứ 2 đến giây thứ (End - 3)
+                // Timer rơi lì xì: Rải rác quanh 50% thời gian đua
                 // Tổng thời gian đua là RACE_DURATION (25s).
-                // Thời gian spawn khả dụng: 20s (từ s thứ 3 đến s thứ 23)
+                // 50% là 12.5s. Rải từ 40% đến 60% (10s -> 15s).
                 const totalItems = this.pendingLuckyMoneys.length;
-                const availableTime = (RACE_DURATION - 5) * 1000; 
-                const interval = availableTime / totalItems;
+                
+                const startRatio = 0.4; // 40%
+                const endRatio = 0.6;   // 60%
+                
+                const startTime = GameConstants.RACE_DURATION * startRatio * 1000;
+                const endTime = GameConstants.RACE_DURATION * endRatio * 1000;
+                const availableTime = endTime - startTime;
+                
+                const interval = availableTime / Math.max(1, totalItems);
 
                 this.spawnTimer = this.time.addEvent({
                     delay: interval,
@@ -378,7 +471,7 @@ export const GamePhaser: React.FC = () => {
                         this.spawnLuckyMoneyBatch(1);
                     },
                     repeat: totalItems - 1,
-                    startAt: -3000 // Start after 3s delay
+                    startAt: -startTime // Delay start
                 });
             }
 
@@ -386,9 +479,9 @@ export const GamePhaser: React.FC = () => {
                 // 1. Tạo danh sách mệnh giá
                 const values: number[] = [];
                 // Quotas: [6, 8, 1] tương ứng với [10, 20, 50]
-                const quotas = GET_LUCKY_MONEY_QUOTAS(5); 
+                const quotas = GameConstants.GET_LUCKY_MONEY_QUOTAS(5); 
                 
-                const baseValues = [10, 20, 50]; // Loại bỏ 100k
+                const baseValues = GameConstants.LUCKY_MONEY_VALUES; // Loại bỏ 100k
                 
                 baseValues.forEach((val, idx) => {
                     const count = quotas[idx] || 0;
@@ -437,52 +530,30 @@ export const GamePhaser: React.FC = () => {
 
             private spawnSingleLuckyMoney(laneIndex: number, value: number) {
                 // 1. Tính toán vị trí rớt
-                // Start X (trên trời)
-                const startX = this.cameras.main.scrollX + VIEWPORT_WIDTH + 100 + Phaser.Math.Between(0, 100);
+                // Start X (trên trời) - Phải nằm phía trước Camera một chút
+                const startX = this.cameras.main.scrollX + GameConstants.VIEWPORT_WIDTH * 0.8 + Phaser.Math.Between(0, 100);
                 
                 // Final X (tiếp đất): Bay lùi lại 250px so với startX
                 const finalX = startX - 250;
 
-                // 2. Tạo path tạm để tính toán
-                const path = RacePath.createPath();
+                // 2. Lấy path của lane tương ứng để tính toán chính xác
+                // LaneIndex: -2..2 -> 0..4
+                const path = RacePath.getPathForLane(laneIndex + 2);
                 
-                // 3. Lấy tọa độ Y trung tâm tại vị trí tiếp đất (finalX)
-                // Quan trọng: Phải tính Y tại finalX chứ không phải startX vì đường chạy cong
-                const centerY = RacePath.getCenterYAtX(path, finalX);
+                // 3. Lấy tọa độ Y tại vị trí tiếp đất (finalX)
+                // Vì đã lấy path cụ thể của lane, nên centerY chính là Y của lane đó
+                const targetY = RacePath.getCenterYAtX(path, finalX);
 
-                // 4. Tính toán Normal Vector tại finalX để offset vuông góc với đường chạy
-                // Lấy mẫu 2 điểm nhỏ quanh finalX để tính tangent
-                const y1 = RacePath.getCenterYAtX(path, finalX - 5);
-                const y2 = RacePath.getCenterYAtX(path, finalX + 5);
-                const dx = 10;
-                const dy = y2 - y1;
-                const angle = Math.atan2(dy, dx); // Góc của đường chạy
-                
-                // Vector pháp tuyến (Normal) vuông góc với tangent (-dy, dx) hoặc xoay 90 độ
-                // Trong hệ tọa độ màn hình (Y xuống), nếu tangent là (1, 0) -> 0 độ. Normal là (0, 1) -> 90 độ.
-                // Lane index: -2 (Top) -> 2 (Bottom).
-                // Offset theo trục Y local của lane sẽ chiếu lên trục Y world bằng cos(angle)?
-                // Đơn giản hơn: Xoay vector (0, offset) đi một góc 'angle'
-                // normalY xấp xỉ 1 khi đường ít cong. Nhưng nếu cong, ta dùng công thức xoay:
-                // newY = x*sin(a) + y*cos(a). Với x=0, y=offset -> newY = offset * cos(angle)
-                // newX = x*cos(a) - y*sin(a) -> newX = -offset * sin(angle)
-                // Vì góc nhỏ, cos(angle) ~ 1.
-                // Tuy nhiên để chính xác:
-                const laneMultiplier = 2.5; 
-                const baseOffset = (laneIndex * BASE_GAP_HORSE_Y) * laneMultiplier;
-                
-                const offsetX = -baseOffset * Math.sin(angle);
-                const offsetY = baseOffset * Math.cos(angle);
-
-                // 5. Tính toán tọa độ đích
-                const targetY = centerY + offsetY;
-                const targetX = finalX + offsetX; // Điều chỉnh cả X để vuông góc
+                // 4. Không cần tính offset thủ công nữa vì đã dùng custom path
+                // Target X giữ nguyên là finalX (hoặc điều chỉnh nhẹ nếu cần vuông góc, nhưng không đáng kể)
+                const targetX = finalX;
                 
                 const startY = targetY - 600; // Rớt từ trên cao hơn chút
 
                 // Chọn ngẫu nhiên 1 trong 8 mẫu bao lì xì
                 const skinIndex = Phaser.Math.Between(1, 8);
                 const lm = this.add.image(startX, startY, `lucky_money_s${skinIndex}`).setScale(0); // Start scale 0
+                lm.setDepth(5); // Layer 5: Lucky Money
                 
                 // Gán giá trị tiền và laneIndex để xử lý magnet
                 lm.setData('value', value);
@@ -505,7 +576,7 @@ export const GamePhaser: React.FC = () => {
                     targets: lm,
                     y: targetY,
                     x: targetX, // Bay tới đích đã tính toán chuẩn
-                    scale: 0.15, // Scale về kích thước chuẩn
+                    scale: 0.03, // Giảm còn 30% so với 0.1 cũ (0.1 * 0.3 = 0.03)
                     duration: 1500, // Giảm từ 2500 xuống 1500
                     ease: 'Bounce.easeOut',
                     rotation: 720 * (Math.PI / 180), // Xoay 2 vòng
@@ -516,7 +587,7 @@ export const GamePhaser: React.FC = () => {
                         // Hiệu ứng "thở" (Idle animation)
                         this.tweens.add({
                             targets: lm,
-                            scale: { from: 0.15, to: 0.18 },
+                            scale: { from: 0.03, to: 0.036 },
                             yoyo: true,
                             repeat: -1,
                             duration: 800,
@@ -524,11 +595,12 @@ export const GamePhaser: React.FC = () => {
                         });
 
                         // Hiệu ứng hào quang dưới đất (Ground glow)
-                        const glow = this.add.image(lm.x, lm.y, 'flare').setScale(2).setAlpha(0.5);
+                        // Giảm scale glow theo tỉ lệ lì xì (chia 3)
+                        const glow = this.add.image(lm.x, lm.y, 'flare').setScale(0.6).setAlpha(0.5).setDepth(4); // Layer 4: Glow (Below LM)
                         this.tweens.add({
                             targets: glow,
                             alpha: 0.1,
-                            scale: 3,
+                            scale: 0.9,
                             yoyo: true,
                             repeat: -1,
                             duration: 1000
@@ -557,8 +629,8 @@ export const GamePhaser: React.FC = () => {
         const config: Phaser.Types.Core.GameConfig = {
             type: Phaser.AUTO,
             parent: containerRef.current,
-            width: VIEWPORT_WIDTH,
-            height: VIEWPORT_HEIGHT,
+            width: GameConstants.VIEWPORT_WIDTH,
+                height: GameConstants.VIEWPORT_HEIGHT,
             backgroundColor: '#87CEEB', // Sky blue fallback
             physics: {
                 default: 'arcade',
@@ -571,6 +643,10 @@ export const GamePhaser: React.FC = () => {
             audio: {
                 disableWebAudio: false,
                 noAudio: false
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
             }
         };
 
@@ -617,11 +693,11 @@ export const GamePhaser: React.FC = () => {
                     <button className={styles.button} onClick={handleReset} disabled={isRacing}>Làm mới</button>
                 )}
             </div>
-
+            
             {/* Phaser Container */}
-            <div ref={containerRef} style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, margin: '0 auto', borderRadius: '12px', overflow: 'hidden' }} />
+            <div ref={containerRef} style={{ width: GameConstants.VIEWPORT_WIDTH, height: GameConstants.VIEWPORT_HEIGHT, margin: '0 auto', borderRadius: '12px', overflow: 'hidden' }} />
 
-            {isFinished && (
+            {isFinished && ( 
                 <div className={styles.results}>
                     <h2>Kết quả chung cuộc 🏆</h2>
                     {results.sort((a, b) => (a.rank || 99) - (b.rank || 99)).map(horse => (

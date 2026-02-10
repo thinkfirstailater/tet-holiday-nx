@@ -39,7 +39,9 @@ export const down: Migration = async () => {
     { $unset: { phone: '' } }
   );
   
-  await usersCollection.dropIndex('phone_1').catch(() => {});
+  await usersCollection.dropIndex('phone_1').catch(() => {
+    // Ignore error if index doesn't exist
+  });
   
   console.log('✅ Removed phone field from users collection');
 };

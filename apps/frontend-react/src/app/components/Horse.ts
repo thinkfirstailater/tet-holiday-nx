@@ -20,12 +20,13 @@ export interface HorseData {
 
 export class Horse extends Phaser.GameObjects.Container {
     private sprite: Phaser.GameObjects.Sprite;
+    private shadow: Phaser.GameObjects.Ellipse;
     private nameText: Phaser.GameObjects.Text;
     private moneyText: Phaser.GameObjects.Text;
     public horseData: HorseData;
     private baseSpeed: number;
     private racePath?: Phaser.Curves.Path;
-    public pathLength: number = 0;
+    public pathLength = 0;
     
 
     constructor(scene: Phaser.Scene, x: number, y: number, data: HorseData, baseSpeed: number) {
@@ -37,41 +38,96 @@ export class Horse extends Phaser.GameObjects.Container {
         this.initRacePath();
         this.ensureAnimations(scene);
 
+        // 0.5. Khởi tạo Shadow (Bóng đổ)
+        // Giảm kích thước shadow cho phù hợp với ngựa (36x10)
+        this.shadow = scene.add.ellipse(0, 0, 36, 10, 0x000000, 0.4);
+        this.shadow.setOrigin(0.5);
+
         // 1. Khởi tạo Sprite
-        this.sprite = scene.add.sprite(0, 0, `horse_running_${data.id}`);
-        this.sprite.setScale(1.2); // Giảm scale từ 1.8 xuống 1.2
+        const spriteKey = `horse_running_${data.id}`;
+        if (!scene.textures.exists(spriteKey)) {
+            console.error(`Texture missing: ${spriteKey}`);
+        }
+        this.sprite = scene.add.sprite(0, 0, spriteKey);
+        this.sprite.setScale(0.5); // Giảm scale xuống 0.5
         this.sprite.setOrigin(0.5, 1); // Đặt tâm ở giữa dưới để chân ngựa chạm đường
         this.playIdle(); // Mặc định là trạng thái chờ
 
         // 2. Khởi tạo Text tên ngựa (Điều chỉnh lại vị trí cho scale nhỏ hơn)
-        this.nameText = scene.add.text(0, -80, data.name, {
-            fontSize: '14px',
+        this.nameText = scene.add.text(0, -40, data.name, {
+            fontSize: '10px',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 3
+            strokeThickness: 2
         }).setOrigin(0.5);
 
         // 3. Khởi tạo Text tiền lì xì
-        this.moneyText = scene.add.text(0, -100, '', {
-            fontSize: '12px',
+        this.moneyText = scene.add.text(0, -52, '', {
+            fontSize: '10px',
             color: '#FFD700',
             stroke: '#000000',
             strokeThickness: 2
         }).setOrigin(0.5);
 
-        // Thêm các thành phần vào Container
-        this.add([this.sprite, this.nameText, this.moneyText]);
+        // Thêm các thành phần vào Container (Shadow nằm dưới cùng)
+        this.add([this.shadow, this.sprite, this.nameText, this.moneyText]);
         
         // Kích hoạt vật lý cho Container
         scene.physics.add.existing(this);
         scene.add.existing(this);
+        
+        // Layer 10: Horse (Cao hơn BG và Lane)
+        this.setDepth(10);
+
+        // Make interactive for camera focus
+        this.setSize(100, 100);
+        this.setInteractive({ cursor: 'pointer' });
+
+        // Snap to start position immediately to fix visual mismatch
+        this.setStartPostion();
     }
 
     /**
-     * Khởi tạo quỹ đạo chạy trung tâm dựa trên dữ liệu SVG
+     * Đặt vị trí ban đầu cho ngựa dựa trên Path (thay vì tọa độ truyền vào constructor)
+     */
+    public setStartPostion() {
+        if (!this.racePath) return;
+        
+        const progress = 0;
+        const centerPoint = this.racePath.getPoint(progress);
+        const tangent = this.racePath.getTangent(progress);
+        const normalX = -tangent.y;
+        const normalY = tangent.x;
+        
+        const laneId = this.horseData.positionIndex + 2;
+        const hasCustomPath = RacePath.hasCustomPath(laneId);
+        
+        let laneOffset = 0;
+        if (!hasCustomPath) {
+             const laneMultiplier = 2.5; 
+             laneOffset = (this.horseData.baseLaneY - RacePath.CENTER_BASE_Y) * laneMultiplier;
+        }
+        
+        // Logic giống updateHorse nhưng không có bobbing và time
+        const finalX = centerPoint.x + (normalX * laneOffset);
+        const finalY = centerPoint.y + normalY * laneOffset;
+
+        this.setPosition(finalX, finalY);
+        
+        // Set initial rotation
+        const angle = Math.atan2(tangent.y, tangent.x);
+        this.sprite.setRotation(angle);
+        this.shadow.setRotation(angle);
+        this.nameText.setRotation(-angle);
+        this.moneyText.setRotation(-angle);
+    }
+
+    /**
+     * Khởi tạo quỹ đạo chạy dựa trên dữ liệu SVG và Lane ID
      */
     private initRacePath() {
-        this.racePath = RacePath.createPath();
+        const laneId = this.horseData.positionIndex + 2;
+        this.racePath = RacePath.getPathForLane(laneId);
         this.pathLength = this.racePath.getLength();
     }
 
@@ -141,14 +197,35 @@ export class Horse extends Phaser.GameObjects.Container {
         if (this.horseData.finished || !this.racePath) return;
 
         // 1. Thay đổi targetSpeed ngẫu nhiên
-        if (Phaser.Math.Between(0, 100) < 2) {
-            this.horseData.targetSpeed = this.baseSpeed + Phaser.Math.Between(-80, 100);
+        // Logic mới: Tăng tính ngẫu nhiên và kịch tính
+        // 5% cơ hội thay đổi tốc độ mỗi frame
+        if (Phaser.Math.Between(0, 100) < 5) {
+            // Hệ số ngẫu nhiên lớn hơn: từ -40% đến +60%
+            const randomFactor = Phaser.Math.FloatBetween(-0.4, 0.6);
+            
+            // Thêm yếu tố "bứt phá" (Boost) hiếm gặp (2% cơ hội)
+            let boost = 0;
+            if (Phaser.Math.Between(0, 100) < 2) {
+                boost = this.baseSpeed * 0.5; // Tăng thêm 50% tốc độ
+            }
+
+            // Tính targetSpeed mới
+            this.horseData.targetSpeed = this.baseSpeed + (this.baseSpeed * randomFactor) + boost;
+            
+            // Safety check: Không bao giờ để speed dưới 60% baseSpeed để tránh quá chậm
+            const minSpeed = this.baseSpeed * 0.6;
+            if (this.horseData.targetSpeed < minSpeed) {
+                this.horseData.targetSpeed = minSpeed;
+            }
         }
 
         // 2. Tiến tới tốc độ mục tiêu (Lerp)
-        this.horseData.speed = Phaser.Math.Linear(this.horseData.speed, this.horseData.targetSpeed, 0.05);
+        // Giảm lerp factor để thay đổi tốc độ mượt mà hơn nhưng vẫn đủ nhanh để thấy khác biệt
+        this.horseData.speed = Phaser.Math.Linear(this.horseData.speed, this.horseData.targetSpeed, 0.02);
 
         // 3. Cập nhật progress dựa trên tốc độ
+        // delta là giây. speed là px/giây (đã tính ở GamePhaser).
+        // Không nhân 60 nữa vì speed đã là px/sec.
         const distancePerFrame = this.horseData.speed * delta;
         const progressDelta = distancePerFrame / this.pathLength;
         this.horseData.currentPos += progressDelta;
@@ -176,32 +253,57 @@ export class Horse extends Phaser.GameObjects.Container {
         const normalY = tangent.x;
 
         // 7. Tính toán Lane Offset (Tăng khoảng cách để ngựa không sát nhau)
-         // centerBaseY = 1250 (Mốc mới của bạn).
-         const laneMultiplier = 2.5; 
-         const laneOffset = (this.horseData.baseLaneY - RacePath.CENTER_BASE_Y) * laneMultiplier;
- 
-         // 8. Vị trí thực tế = Vị trí trung tâm + (Normal Vector * Offset)
-        const bobbing = Math.sin(time / 100 + this.horseData.id) * 2;
-        // Giảm tác động của việc bẻ cua lên trục X (nhân 0.5) để tránh hiện tượng "giật lùi" cho các lane xa tâm
-        const finalX = centerPoint.x + (normalX * laneOffset * 0.5);
-        const finalY = centerPoint.y + normalY * laneOffset + bobbing;
+        // centerBaseY = 1250 (Mốc mới của bạn).
+        const laneId = this.horseData.positionIndex + 2;
+        const hasCustomPath = RacePath.hasCustomPath(laneId);
+        
+        let laneOffset = 0;
+        if (!hasCustomPath) {
+             const laneMultiplier = 2.5; 
+             laneOffset = (this.horseData.baseLaneY - RacePath.CENTER_BASE_Y) * laneMultiplier;
+        }
 
-        // 9. Cập nhật vị trí Container (Làm tròn để tránh rung hình)
-        this.setPosition(Math.round(finalX), Math.round(finalY));
+        // 8. Vị trí thực tế = Vị trí trung tâm + (Normal Vector * Offset)
+        // Tạo hiệu ứng nhún nhảy cho Sprite thay vì toàn bộ Container
+        const bobbing = Math.sin(time / 80 + this.horseData.id) * 4; 
+        const jumpHeight = Math.min(0, bobbing); // Chỉ lấy phần âm (nhảy lên), phần dương coi như chạm đất
+
+        this.sprite.y = jumpHeight;
+        
+        // Hiệu ứng bóng đổ: Khi ngựa nhảy cao thì bóng nhỏ lại và mờ đi
+        const shadowScale = Phaser.Math.Clamp(1 + (jumpHeight / 20), 0.6, 1);
+        this.shadow.setScale(shadowScale);
+        this.shadow.setAlpha(0.4 * shadowScale);
+
+        // Giảm tác động của việc bẻ cua lên trục X (nhân 0.5) để tránh hiện tượng "giật lùi" cho các lane xa tâm
+        // FIX: Bỏ nhân 0.5 vì nó làm sai lệch vector pháp tuyến, gây méo hình học. 
+        // Nếu muốn khoảng cách các làn nhỏ hơn, hãy giảm laneMultiplier.
+        const finalX = centerPoint.x + (normalX * laneOffset);
+        const finalY = centerPoint.y + normalY * laneOffset;
+
+        // 9. Cập nhật vị trí Container (Không làm tròn để di chuyển mượt mà)
+        this.setPosition(finalX, finalY);
  
          // 10. Cập nhật góc xoay (Rotation) dựa trên Tangent
-         // Khi về đích (finished), reset góc xoay về 0 để ngựa đứng thẳng
-         if (this.horseData.finished) {
-             this.sprite.setRotation(0);
-             this.nameText.setRotation(0);
-             this.moneyText.setRotation(0);
-         } else {
-             const angle = Math.atan2(tangent.y, tangent.x);
-             this.sprite.setRotation(angle);
+        // Khi về đích (finished), reset góc xoay về 0 để ngựa đứng thẳng
+        if (this.horseData.finished) {
+            this.sprite.setRotation(0);
+            this.shadow.setRotation(0);
+            this.nameText.setRotation(0);
+            this.moneyText.setRotation(0);
+        } else {
+             const targetAngle = Math.atan2(tangent.y, tangent.x);
              
-             // Cập nhật text luôn đứng thẳng
-             this.nameText.setRotation(-angle);
-             this.moneyText.setRotation(-angle);
+             // Smooth rotation (Lerp angle) để tránh giật khi path không trơn
+             const currentRotation = this.sprite.rotation;
+            const smoothRotation = Phaser.Math.Angle.RotateTo(currentRotation, targetAngle, 0.1);
+            
+            this.sprite.setRotation(smoothRotation);
+            this.shadow.setRotation(smoothRotation);
+            
+            // Cập nhật text luôn đứng thẳng
+            this.nameText.setRotation(-smoothRotation);
+            this.moneyText.setRotation(-smoothRotation);
          }
     }
 
@@ -211,7 +313,7 @@ export class Horse extends Phaser.GameObjects.Container {
     collectMoney(value: number) {
         this.horseData.hasLuckyMoney = true;
         this.horseData.money = value;
-        this.moneyText.setText(`🧧 ${value}k`);
+        this.updateMoneyText();
         
         // Hiệu ứng lượm tiền
         this.scene.tweens.add({
@@ -222,17 +324,24 @@ export class Horse extends Phaser.GameObjects.Container {
         });
     }
 
+    public updateMoneyText() {
+        if (this.horseData.money > 0) {
+            this.moneyText.setText(`🧧 ${this.horseData.money}k`);
+        } else {
+            this.moneyText.setText('');
+        }
+    }
+
     /**
      * Cập nhật hiển thị khi về đích (ví dụ: nhân đôi tiền)
      */
-    setFinished(rank: number, winnerBonus: boolean = false) {
+    setFinished(rank: number, winnerBonus = false) {
         this.horseData.finished = true;
         this.horseData.rank = rank;
         
-        if (winnerBonus && this.horseData.money > 0) {
-            this.horseData.money *= 2; // Nhân đôi tiền thưởng
-            this.moneyText.setText(`🧧 x2: ${this.horseData.money}k`);
-        }
+        // Logic nhân đôi tiền đã được xử lý ở GamePhaser trước khi gọi hàm này
+        // Nhưng nếu muốn chắc chắn hiển thị đúng:
+        this.updateMoneyText();
 
         // Chuyển sang animation thắng cuộc
         this.playWin();
@@ -251,8 +360,9 @@ export class Horse extends Phaser.GameObjects.Container {
         this.horseData.hasLuckyMoney = false;
         this.horseData.rank = 0;
         
-        this.x = startX;
-        this.y = baseY;
+        // Snap to start position instead of using raw startX/baseY
+        this.setStartPostion();
+
         this.moneyText.setText('');
         this.playIdle();
     }

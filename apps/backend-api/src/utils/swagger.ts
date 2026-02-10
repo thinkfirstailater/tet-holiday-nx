@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-export function setupSwagger(app: INestApplication, path: string = 'api-docs'): void {
+export function setupSwagger(app: INestApplication, path = 'api-docs'): void {
   const config = new DocumentBuilder()
     .setTitle('BE API')
     .setDescription('API documentation for TET Holiday application')
