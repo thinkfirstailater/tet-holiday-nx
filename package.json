@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "start": "npm run start:fe",
     "start:api": "nx serve backend-api",
     "start:fe": "nx serve frontend-react",
     "start:all": "nx run-many --target=serve --projects=backend-api,frontend-react",

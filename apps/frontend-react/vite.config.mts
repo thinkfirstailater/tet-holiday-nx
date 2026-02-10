@@ -8,12 +8,14 @@ export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/frontend-react',
   server: {
-    port: 4200,
-    host: 'localhost',
+    port: process.env.PORT ? Number(process.env.PORT) : 4200,
+    host: '0.0.0.0',
+    allowedHosts: true as const,
   },
   preview: {
-    port: 4200,
-    host: 'localhost',
+    port: process.env.PORT ? Number(process.env.PORT) : 4200,
+    host: '0.0.0.0',
+    allowedHosts: true as const,
   },
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
