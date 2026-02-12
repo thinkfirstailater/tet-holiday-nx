@@ -26,11 +26,12 @@ interface OnlineGamePhaserProps {
     myPlayerId?: string;
     players: any[]; // List of players from room state
     isRacing?: boolean;
+    isFinished?: boolean;
     luckyMoneys?: any[]; // List of active lucky moneys
     onStartGame?: () => void;
 }
 
-export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, roomId, isHost, myPlayerId, players, isRacing, luckyMoneys = [], onStartGame }) => {
+export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, roomId, isHost, myPlayerId, players, isRacing, isFinished, luckyMoneys = [], onStartGame }) => {
     const gameRef = useRef<Phaser.Game | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -847,8 +848,8 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                     </div>
                 </div>
 
-                {/* Start Game / Waiting Status */}
-                {!isRacing && (
+                {/* Lobby HUD (Start Game / Waiting) */}
+                {!isRacing && !isFinished && (
                     <div style={{ marginTop: '5px', pointerEvents: 'auto' }}>
                         {isHost ? (
                             <button
