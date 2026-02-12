@@ -16,6 +16,7 @@ import { GameModule } from './modules/game/game.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
+      envFilePath: ['apps/backend-api/.env', '.env'],
     }),
     StorageModule,
     UserApiModule,

@@ -83,21 +83,29 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
   private startGameLoop(roomId: string) {
     const interval = setInterval(() => {
-        const room = this.gameService.updateGameLoop(roomId);
-        if (!room) {
-            clearInterval(interval);
-            return;
-        }
-        
-        // Broadcast updates
-        this.server.to(roomId).emit('race-update', {
-            raceState: room.raceState,
-            serverTime: Date.now()
-        });
+        try {
+            const room = this.gameService.updateGameLoop(roomId);
+            if (!room) {
+                clearInterval(interval);
+                return;
+            }
+            
+            // Broadcast updates
+            this.server.to(roomId).emit('race-update', {
+                raceState: room.raceState,
+                luckyMoneys: Object.values(room.luckyMoneys),
+                serverTime: Date.now()
+            });
 
-        if (room.state === 'FINISHED') {
-            this.server.to(roomId).emit('game-over', room);
-            clearInterval(interval);
+            if (room.state === 'FINISHED') {
+                this.server.to(roomId).emit('game-over', room);
+                clearInterval(interval);
+            }
+        } catch (error) {
+            console.error('Game loop error:', error);
+            // Don't kill the loop, try to recover next tick? 
+            // Or maybe kill it if it's fatal?
+            // For now, let's keep it running but log
         }
     }, 1000 / 30); // 30 FPS
   }

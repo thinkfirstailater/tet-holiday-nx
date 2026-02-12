@@ -11,6 +11,22 @@ export interface PlayerState extends Player {
   rank: number;
   finished: boolean;
   finishedAt?: number;
+  money: number; // Accumulated lucky money
+  hasCollectedLuckyMoney?: boolean;
+}
+
+export interface LuckyMoney {
+  id: string;
+  laneIndex: number; // -2, -1, 0, 1, 2
+  position: number; // Track position
+  value: number;
+  isCollected: boolean;
+}
+
+export interface PendingLuckyMoney {
+  value: number;
+  laneIndex: number;
+  spawnTime: number; // Relative to race start (ms)
 }
 
 export interface GameRoom {
@@ -19,6 +35,9 @@ export interface GameRoom {
   players: Record<string, Player>; // socketId -> Player
   state: 'LOBBY' | 'RACING' | 'FINISHED';
   raceState: Record<string, PlayerState>; // socketId -> State
+  luckyMoneys: Record<string, LuckyMoney>; // id -> LuckyMoney (Active)
+  pendingLuckyMoneys: PendingLuckyMoney[];
+  raceStartTime?: number;
   createdAt: number;
 }
 
@@ -39,6 +58,7 @@ export interface RoomStateDto {
 }
 
 export interface RaceUpdateDto {
-  positions: Record<string, { p: number; s: number }>; // position, speed (minimized for bandwidth)
+  positions: Record<string, { p: number; s: number; m: number }>; // position, speed, money
+  luckyMoneys: LuckyMoney[]; // Active lucky moneys to render
   serverTime: number;
 }

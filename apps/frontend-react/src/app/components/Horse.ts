@@ -190,6 +190,59 @@ export class Horse extends Phaser.GameObjects.Container {
     }
 
     /**
+     * Updates horse position based on progress (0 -> 1) directly.
+     * Used for Online Mode synchronization.
+     */
+    public updateToProgress(progress: number) {
+        if (!this.racePath) return;
+
+        // Clamp progress
+        const p = Math.max(0, Math.min(1, progress));
+        this.horseData.currentPos = p;
+
+        const centerPoint = this.racePath.getPoint(p);
+        const tangent = this.racePath.getTangent(p);
+        const normalX = -tangent.y;
+        const normalY = tangent.x;
+        
+        const laneId = this.horseData.positionIndex + 2;
+        const hasCustomPath = RacePath.hasCustomPath(laneId);
+        
+        let laneOffset = 0;
+        if (!hasCustomPath) {
+             const laneMultiplier = 2.5; 
+             laneOffset = (this.horseData.baseLaneY - RacePath.CENTER_BASE_Y) * laneMultiplier;
+        }
+        
+        const finalX = centerPoint.x + (normalX * laneOffset);
+        const finalY = centerPoint.y + normalY * laneOffset;
+
+        this.setPosition(finalX, finalY);
+        
+        // Animation & Rotation state
+        if (p >= 0.99) { // Threshold to snap to upright
+            if (!this.horseData.finished) {
+                this.horseData.finished = true;
+                this.playWin();
+            }
+            // Force upright when finished
+            this.sprite.setRotation(0);
+            this.shadow.setRotation(0);
+            this.nameText.setRotation(0);
+            this.moneyText.setRotation(0);
+        } else {
+             this.playRun();
+             
+             // Update rotation based on path
+             const angle = Math.atan2(tangent.y, tangent.x);
+             this.sprite.setRotation(angle);
+             this.shadow.setRotation(angle);
+             this.nameText.setRotation(-angle);
+             this.moneyText.setRotation(-angle);
+        }
+    }
+
+    /**
      * Cập nhật vị trí ngựa dựa trên progress (0 -> 1)
      * Sử dụng Normal Vector để offset làn đường và Tangent Vector để xoay ngựa
      */

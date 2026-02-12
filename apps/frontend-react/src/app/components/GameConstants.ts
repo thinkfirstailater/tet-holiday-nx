@@ -19,5 +19,5 @@ export class GameConstants {
     public static readonly AUDIO_VOLUME_COLLECT = 1.0;
 
     // --- Debug ---
-    public static readonly DEBUG_PATH = true;
+    public static readonly DEBUG_PATH = false;
 }

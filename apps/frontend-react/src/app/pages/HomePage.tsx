@@ -1,0 +1,27 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+export const HomePage: React.FC = () => {
+    return (
+        <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'Arial, sans-serif' }}>
+            <h1>Tet Horse Racing</h1>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', marginTop: '40px' }}>
+                <Link to="/offline">
+                    <button style={{ padding: '20px 40px', fontSize: '20px', cursor: 'pointer', borderRadius: '10px' }}>
+                        🐎 Chơi Offline (Một mình)
+                    </button>
+                </Link>
+                <Link to="/host">
+                    <button style={{ padding: '20px 40px', fontSize: '20px', cursor: 'pointer', borderRadius: '10px', backgroundColor: '#4CAF50', color: 'white' }}>
+                        📺 Tạo Phòng (Host - TV)
+                    </button>
+                </Link>
+                <Link to="/join">
+                    <button style={{ padding: '20px 40px', fontSize: '20px', cursor: 'pointer', borderRadius: '10px', backgroundColor: '#2196F3', color: 'white' }}>
+                        📱 Tham Gia (Mobile)
+                    </button>
+                </Link>
+            </div>
+        </div>
+    );
+};

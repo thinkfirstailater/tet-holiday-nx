@@ -6,15 +6,28 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
-        "command": "webpack-cli build",
-        "args": ["--node-env=production"],
-        "cwd": "apps/backend-api"
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/backend-api",
+        "main": "apps/backend-api/src/main.ts",
+        "tsConfig": "apps/backend-api/tsconfig.app.json",
+        "assets": ["apps/backend-api/src/assets"],
+        "webpackConfig": "apps/backend-api/webpack.config.js"
       },
       "configurations": {
         "development": {
-          "args": ["--node-env=development"]
+          "optimization": false,
+          "extractLicenses": false,
+          "inspect": false
+        },
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false
         }
       }
     },
