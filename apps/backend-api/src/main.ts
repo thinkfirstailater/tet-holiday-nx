@@ -4,10 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app/app.module';
 import { IAppConfig } from './configuration';
 import { setupSwagger } from './utils/swagger';
-import { setServers } from 'node:dns/promises';
 
 async function bootstrap() {
-  setServers(['1.1.1.1', '1.0.0.1', '8.8.8.8']);
   const app = await NestFactory.create(AppModule);
   const configService = app.get<ConfigService<IAppConfig>>(ConfigService);
   
@@ -37,8 +35,8 @@ async function bootstrap() {
     new Logger().error('Uncaught Exception', err);
   });
 
-  await app.listen(port).then(() => {
-    Logger.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
+  await app.listen(port, '0.0.0.0').then(() => {
+    Logger.log(`🚀 Application is running on: http://0.0.0.0:${port}/${apiPrefix}`);
   });
 }
 
