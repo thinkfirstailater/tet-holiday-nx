@@ -6,6 +6,8 @@ export const HostPage: React.FC = () => {
     const [room, setRoom] = useState<any>(null);
     const [socket, setSocket] = useState<any>(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [hostName, setHostName] = useState('');
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -13,13 +15,18 @@ export const HostPage: React.FC = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
+    const handleCreateRoom = () => {
+        if (!hostName.trim()) {
+            alert('Vui lòng nhập tên của bạn!');
+            return;
+        }
+        setIsCreating(true);
         const s = SocketService.getInstance().connect();
         setSocket(s);
 
         const onConnect = () => {
             console.log('Connected, creating room...');
-            s.emit('create-room', { username: 'Host' });
+            s.emit('create-room', { username: hostName });
         };
 
         const onRoomCreated = (newRoom: any) => {
@@ -56,6 +63,7 @@ export const HostPage: React.FC = () => {
         const onError = (err: any) => {
             console.error('Socket error:', err);
             alert(`Error: ${err.message || 'Unknown error'}`);
+            setIsCreating(false);
         };
 
         s.on('connect', onConnect);
@@ -70,16 +78,15 @@ export const HostPage: React.FC = () => {
         if (s.connected) {
             onConnect();
         }
+    };
 
+    useEffect(() => {
         return () => {
-            s.off('connect', onConnect);
-            s.off('room-created', onRoomCreated);
-            s.off('room-state', onRoomState);
-            s.off('game-started', onGameStarted);
-            s.off('race-update', onRaceUpdate);
-            s.off('game-over', onGameOver);
-            s.off('error', onError);
-            SocketService.getInstance().disconnect();
+            const s = SocketService.getInstance().getSocket();
+            if (s) {
+                s.removeAllListeners();
+                SocketService.getInstance().disconnect();
+            }
         };
     }, []);
 
@@ -108,7 +115,61 @@ export const HostPage: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [room, socket]);
 
-    if (!room) return <div style={{ color: 'white', padding: '20px' }}>Creating room...</div>;
+    if (!room) {
+        return (
+            <div style={{
+                width: '100%',
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#2c3e50',
+                color: 'white',
+                gap: '20px'
+            }}>
+                <h1 style={{ color: '#FFD700', textShadow: '2px 2px 4px #000' }}>TẠO PHÒNG ĐUA</h1>
+                
+                <input
+                    type="text"
+                    placeholder="Nhập tên của bạn (Host)"
+                    value={hostName}
+                    onChange={(e) => setHostName(e.target.value)}
+                    style={{
+                        padding: '15px 20px',
+                        fontSize: '18px',
+                        borderRadius: '30px',
+                        border: '2px solid #FFD700',
+                        width: '80%',
+                        maxWidth: '300px',
+                        outline: 'none',
+                        textAlign: 'center'
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateRoom()}
+                />
+
+                <button
+                    onClick={handleCreateRoom}
+                    disabled={isCreating}
+                    style={{
+                        padding: '15px 40px',
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        backgroundColor: isCreating ? '#95a5a6' : '#27ae60',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50px',
+                        cursor: isCreating ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        transition: 'transform 0.2s',
+                        transform: isCreating ? 'none' : 'scale(1)'
+                    }}
+                >
+                    {isCreating ? 'ĐANG TẠO...' : 'TẠO PHÒNG 🎮'}
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>

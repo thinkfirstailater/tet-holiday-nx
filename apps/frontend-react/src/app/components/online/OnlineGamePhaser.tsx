@@ -12,11 +12,11 @@ import styles from '../Game.module.css';
 const MIDDLE_HORSE_START_RUNNING_X = 260.661; // Sync with SVG Path
 
 const HORSES_DATA: HorseData[] = [
-    { id: 1, positionIndex: -2, name: 'Xích Thố', image: '/assets/horses/Horse_fullcolor_black_barebackriding.png', color: '#FF5722', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 2, positionIndex: -1, name: 'Đích Lư', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#FFC107', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 3, positionIndex: 0, name: 'Tuyệt Ảnh', image: '/assets/horses/Horse_fullcolor_white_barebackriding.png', color: '#2196F3', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 4, positionIndex: 1, name: 'Bạch Long', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 5, positionIndex: 2, name: 'Ô Vân', image: '/assets/horses/Horse_fullcolor_paint_beige_barebackriding.png', color: '#212121', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 1, positionIndex: -2, name: 'Xám Lông Đen', image: '/assets/horses/Horse_fullcolor_black_barebackriding.png', color: '#FF5722', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 2, positionIndex: -1, name: 'Nâu Lông Đỏ', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#FFC107', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 3, positionIndex: 0, name: 'Trắng Lông Zàng', image: '/assets/horses/Horse_fullcolor_white_barebackriding.png', color: '#2196F3', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 4, positionIndex: 1, name: 'Trắng Lông Nâu', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 5, positionIndex: 2, name: 'Vàng Lông Trắng', image: '/assets/horses/Horse_fullcolor_paint_beige_barebackriding.png', color: '#212121', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
 ];
 
 interface OnlineGamePhaserProps {
@@ -154,9 +154,9 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                 if (isMobile && isPortrait) {
                     // Mobile Portrait: Bottom Center
                     hudX = width / 2;
-                    hudY = height - 120; // Lift up a bit
+                    hudY = height - 350; // Lift up more for better visibility
                 } else {
-                    // Desktop/Landscape: Bottom Right
+                    // Desktop/Landscape: Bottom Right (Inside canvas)
                     hudX = width - 80;
                     hudY = height - 80;
                 }
@@ -164,6 +164,7 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                 const btnContainer = this.add.container(hudX, hudY);
                 this.btnContainer = btnContainer;
                 btnContainer.setDepth(1000); 
+                btnContainer.setScrollFactor(0); // Fix position relative to camera
 
                 // Scale up button for mobile touch
                 if (isMobile) {
@@ -869,7 +870,7 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                                     textTransform: 'uppercase'
                                 }}
                             >
-                                Start Game
+                                Bắt đầu đua
                             </button>
                         ) : (
                             <div style={{
@@ -883,7 +884,7 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                                 backdropFilter: 'blur(4px)',
                                 border: '1px solid #4CAF50'
                             }}>
-                                WAITING FOR HOST...
+                                Chờ bắt đầu...
                             </div>
                         )}
                     </div>
