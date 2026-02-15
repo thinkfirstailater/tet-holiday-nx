@@ -114,6 +114,14 @@ export const Navigation: React.FC = () => {
                 >
                     🌸 Rung Hoa
                 </Link>
+
+                <Link 
+                    to="/ban-xi" 
+                    style={{ ...styles.menuItem, ...(location.pathname.startsWith('/ban-xi') ? styles.activeItem : {}) }}
+                    onClick={closeMenu}
+                >
+                    🧧 Chém Xì
+                </Link>
             </div>
         </>
     );

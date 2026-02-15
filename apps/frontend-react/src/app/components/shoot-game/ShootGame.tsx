@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { ShakeGamePhaser, GameConfigItem } from './ShakeGamePhaser';
+import { ShootGamePhaser, GameConfigItem } from './ShootGamePhaser';
 
-export const ShakeGame: React.FC = () => {
+export const ShootGame: React.FC = () => {
     const [config, setConfig] = useState<GameConfigItem[]>([
-        { value: '10.000 VNĐ', percent: 30 },
-        { value: '20.000 VNĐ', percent: 30 },
-        { value: '50.000 VNĐ', percent: 20 },
+        { value: '1.000 VNĐ', percent: 10 },
+        { value: '2.000 VNĐ', percent: 15 },
+        { value: '5.000 VNĐ', percent: 20 },
+        { value: '10.000 VNĐ', percent: 20 },
+        { value: '20.000 VNĐ', percent: 15 },
+        { value: '50.000 VNĐ', percent: 10 },
         { value: '100.000 VNĐ', percent: 10 },
-        { value: 'Chúc may mắn lần sau', percent: 10 },
     ]);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [result, setResult] = useState<{ value: string; wish: string } | null>(null);
+    const [result, setResult] = useState<{ totalScore: number; bestReward: string } | null>(null);
 
     const handleAddRow = () => {
         setConfig([...config, { value: '', percent: 0 }]);
@@ -35,47 +37,29 @@ export const ShakeGame: React.FC = () => {
     const totalPercent = config.reduce((sum, item) => sum + item.percent, 0);
     const isValid = totalPercent === 100;
 
-    const handleStart = async () => {
+    const handleStart = () => {
         if (!isValid) {
             alert('Tổng tỉ lệ phải bằng 100%');
             return;
         }
-
-        // Check for iOS 13+ permission requirement
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (typeof DeviceMotionEvent !== 'undefined' && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const permissionState = await (DeviceMotionEvent as any).requestPermission();
-                if (permissionState === 'granted') {
-                    setIsPlaying(true);
-                    setResult(null);
-                } else {
-                    alert('Bạn cần cấp quyền chuyển động để chơi game Rung Hoa! Hãy thử lại.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Lỗi khi xin quyền chuyển động: ' + error);
-            }
-        } else {
-            // Non-iOS 13+ devices (Android, older iOS, Desktop)
-            setIsPlaying(true);
-            setResult(null);
-        }
+        setIsPlaying(true);
+        setResult(null);
     };
 
-    const handleGameResult = (value: string, wish: string) => {
-        setResult({ value, wish });
+    const handleGameOver = (totalScore: number, bestReward: string) => {
+        setResult({ totalScore, bestReward });
     };
 
     const handlePlayAgain = () => {
         setResult(null);
-        // isPlaying remains true, just reset result overlay. 
-        // Note: ShakeGamePhaser needs to know to reset its internal state (shake timer, etc.)
-        // But ShakeGamePhaser resets state after spawning result. 
-        // However, if we just hide overlay, the Phaser game is still running underneath.
-        // We might need to trigger a "reset" in Phaser or just let it continue accepting shakes.
-        // In current implementation, spawnResult resets state. So hiding overlay is enough to continue playing.
+        // We need to unmount and remount ShootGamePhaser to reset it completely, 
+        // or ShootGamePhaser needs to handle reset. 
+        // Since we conditional render ShootGamePhaser when isPlaying is true,
+        // toggling isPlaying off and on would work, but here we are ALREADY isPlaying=true.
+        // We should set isPlaying false then true? Or rely on key?
+        // Let's use a key for ShootGamePhaser to force remount.
+        setIsPlaying(false);
+        setTimeout(() => setIsPlaying(true), 0);
     };
 
     const handleEditConfig = () => {
@@ -86,7 +70,7 @@ export const ShakeGame: React.FC = () => {
     if (isPlaying) {
         return (
             <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-                <ShakeGamePhaser config={config} onResult={handleGameResult} />
+                <ShootGamePhaser config={config} onGameOver={handleGameOver} />
                 
                 {result && (
                     <div style={{
@@ -102,7 +86,7 @@ export const ShakeGame: React.FC = () => {
                         textAlign: 'center',
                         padding: '20px'
                     }}>
-                        <h2 style={{ fontSize: '28px', marginBottom: '15px' }}>🧧 LỘC VỀ! 🧧</h2>
+                        <h2 style={{ fontSize: '28px', marginBottom: '15px' }}>🧧 KẾT QUẢ 🧧</h2>
                         
                         <div style={{ 
                             fontSize: '20px', 
@@ -115,8 +99,15 @@ export const ShakeGame: React.FC = () => {
                             width: '100%',
                             maxWidth: '400px'
                         }}>
-                            <p style={{ margin: '10px 0', fontSize: '24px', fontWeight: 'bold' }}>{result.value}</p>
-                            <p style={{ margin: '10px 0', fontStyle: 'italic', fontSize: '16px' }}>"{result.wish}"</p>
+                            <p style={{ margin: '10px 0', fontSize: '18px' }}>Tổng điểm chém:</p>
+                            <p style={{ margin: '5px 0 20px 0', fontSize: '32px', fontWeight: 'bold', color: '#ffff00' }}>
+                                {result.totalScore.toLocaleString()}
+                            </p>
+                            
+                            <p style={{ margin: '10px 0', fontSize: '18px' }}>Phần thưởng lớn nhất:</p>
+                            <p style={{ margin: '5px 0', fontSize: '28px', fontWeight: 'bold', color: '#E91E63' }}>
+                                {result.bestReward}
+                            </p>
                         </div>
 
                         <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -134,7 +125,7 @@ export const ShakeGame: React.FC = () => {
                                     boxShadow: '0 4px 15px rgba(76, 175, 80, 0.4)'
                                 }}
                             >
-                                CHƠI TIẾP 🌸
+                                CHƠI TIẾP ⚔️
                             </button>
 
                             <button 
@@ -172,7 +163,7 @@ export const ShakeGame: React.FC = () => {
             flexDirection: 'column',
             backgroundColor: '#fff5f8'
         }}>
-            <h1 style={{ textAlign: 'center', color: '#E91E63', fontSize: '24px', marginBottom: '15px' }}>Cấu Hình Lì Xì 🧧</h1>
+            <h1 style={{ textAlign: 'center', color: '#E91E63', fontSize: '24px', marginBottom: '15px' }}>Cấu Hình Chém Xì 🧧</h1>
             
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontWeight: 'bold', fontSize: '14px', padding: '0 5px' }}>
@@ -194,7 +185,7 @@ export const ShakeGame: React.FC = () => {
                                 borderRadius: '8px', 
                                 border: '1px solid #ddd',
                                 fontSize: '16px',
-                                minWidth: 0 // Prevent flex item from overflowing
+                                minWidth: 0 
                             }}
                         />
                         <input 
@@ -275,7 +266,7 @@ export const ShakeGame: React.FC = () => {
                         boxShadow: isValid ? '0 4px 15px rgba(233, 30, 99, 0.4)' : 'none'
                     }}
                 >
-                    BẮT ĐẦU RUNG HOA 🌸
+                    BẮT ĐẦU CHÉM XÌ ⚔️
                 </button>
             </div>
         </div>

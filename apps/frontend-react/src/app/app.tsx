@@ -8,6 +8,7 @@ import { Navigation } from './components/Navigation';
 import styles from './app.module.css';
 
 import { ShakeGame } from './components/shake-game/ShakeGame';
+import { ShootGame } from './components/shoot-game/ShootGame';
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
         <Route path="/dua-ngua/host" element={<HostPage />} />
         <Route path="/dua-ngua/join" element={<JoinPage />} />
         <Route path="/rung-hoa" element={<ShakeGame />} />
+        <Route path="/ban-xi" element={<ShootGame />} />
       </Routes>
     </div>
   );
