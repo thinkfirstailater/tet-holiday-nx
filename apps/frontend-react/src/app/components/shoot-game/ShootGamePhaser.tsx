@@ -57,7 +57,7 @@ export const ShootGamePhaser: React.FC<ShootGamePhaserProps> = ({ config, onGame
         // --- Game Variables ---
         let envelopes: Phaser.Physics.Arcade.Group;
         let score = 0;
-        let slashedValues: string[] = []; // Store values of slashed envelopes
+        const slashedValues: string[] = []; // Store values of slashed envelopes
         let scoreText: Phaser.GameObjects.Text;
         let timerText: Phaser.GameObjects.Text;
         let timeLeft = 10;

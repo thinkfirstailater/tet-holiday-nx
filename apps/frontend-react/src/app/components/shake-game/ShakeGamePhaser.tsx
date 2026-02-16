@@ -61,7 +61,7 @@ export const ShakeGamePhaser: React.FC<ShakeGamePhaserProps> = ({ config, onResu
         
         // Shake Logic
         let lastShakeTime = 0;
-        let shakeThreshold = 10; 
+        const shakeThreshold = 10; 
         let lastX = 0, lastY = 0, lastZ = 0;
         
         let accumulatedShakeTime = 0;

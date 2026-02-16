@@ -6,16 +6,16 @@ import { RaceBackground } from './RaceBackground';
 import { RacePath } from './RacePath';
 import { GameConstants } from './GameConstants';
 
-const HORSE_START_X = RacePath.SVG_START_X; 
-const MIDDLE_HORSE_START_RUNNING_X = HORSE_START_X; 
+const HORSE_START_X = RacePath.SVG_START_X;
+const MIDDLE_HORSE_START_RUNNING_X = HORSE_START_X;
 
 const DEBUG_BACKGROUND_MODE = false;
 
 const HORSES_DATA: HorseData[] = [
     { id: 1, positionIndex: -2, name: 'Xám Lông Đen', image: '/assets/horses/Horse_fullcolor_black_barebackriding.png', color: '#FF5722', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 2, positionIndex: -1, name: 'Nâu Lông Đỏ', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#FFC107', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 2, positionIndex: -1, name: 'Trắng Lông Nâu', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#FFC107', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X + GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
     { id: 3, positionIndex: 0, name: 'Trắng Lông Zàng', image: '/assets/horses/Horse_fullcolor_white_barebackriding.png', color: '#2196F3', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
-    { id: 4, positionIndex: 1, name: 'Long Lông Xanh', image: '/assets/horses/Horse_fullcolor_paint_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
+    { id: 4, positionIndex: 1, name: 'Nâu Lông Đỏ', image: '/assets/horses/Horse_fullcolor_brown_barebackriding.png', color: '#EEEEEE', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
     { id: 5, positionIndex: 2, name: 'Vàng Lông Trắng', image: '/assets/horses/Horse_fullcolor_paint_beige_barebackriding.png', color: '#212121', baseLaneY: 0, startX: MIDDLE_HORSE_START_RUNNING_X - GameConstants.BASE_GAP_HORSE_X * 2, speed: 0, targetSpeed: 0, money: 0, finished: false, rank: 0, currentPos: 0, hasLuckyMoney: false },
 ];
 
@@ -26,7 +26,7 @@ export const GamePhaser: React.FC = () => {
     const [isRacing, setIsRacing] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
     const [results, setResults] = useState<any[]>([]);
-    
+
     // Detect Mobile/Portrait
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
@@ -100,18 +100,18 @@ export const GamePhaser: React.FC = () => {
                 this.raceBackground = new RaceBackground(this, 0);
                 const bgWidth = this.raceBackground.width;
                 const bgHeight = this.raceBackground.height;
-                const winX = RacePath.SVG_END_X; 
+                const winX = RacePath.SVG_END_X;
                 const dynamicCenterY = bgHeight * 0.65;
-                
+
                 RacePath.setConfig(winX, dynamicCenterY);
                 const runDistance = winX - MIDDLE_HORSE_START_RUNNING_X;
                 const baseSpeed = Math.max(0, runDistance / GameConstants.RACE_DURATION);
-                
+
                 this.physics.world.setBounds(0, 0, bgWidth, bgHeight);
 
                 if (DEBUG_BACKGROUND_MODE) {
-                    const zoomLevel = GameConstants.VIEWPORT_WIDTH / bgWidth; 
-                    this.cameras.main.setZoom(zoomLevel); 
+                    const zoomLevel = GameConstants.VIEWPORT_WIDTH / bgWidth;
+                    this.cameras.main.setZoom(zoomLevel);
                     this.cameras.main.centerOn(bgWidth / 2, bgHeight / 2);
                     return;
                 }
@@ -133,7 +133,7 @@ export const GamePhaser: React.FC = () => {
                 if (middleHorse) {
                     this.cameras.main.centerOn(middleHorse.x, middleHorse.y);
                 }
-                
+
                 this.game.events.on('START_RACE', this.startRace, this);
                 this.game.events.on('RESET_RACE', this.resetRace, this);
 
@@ -200,7 +200,7 @@ export const GamePhaser: React.FC = () => {
                 }
 
                 if (this.raceStarted && !this.raceFinished && this.soundRunning && !this.soundRunning.isPlaying) {
-                     this.soundRunning.play();
+                    this.soundRunning.play();
                 }
 
                 if (this.raceStarted && !this.raceFinished) {
@@ -224,13 +224,13 @@ export const GamePhaser: React.FC = () => {
 
                         if (!horse.horseData.hasLuckyMoney) {
                             const hX = horse.x;
-                            const hY = horse.y - 40; 
+                            const hY = horse.y - 40;
                             this.luckyMoneyGroup.getChildren().forEach((lm: any) => {
                                 if (lm.getData('beingCollected')) return;
                                 const lmLane = lm.getData('laneIndex');
                                 const isSameLane = lmLane === horse.horseData.positionIndex;
                                 const distSq = (hX - lm.x) ** 2 + (hY - lm.y) ** 2;
-                                const magnetRangeSq = isSameLane ? 90000 : 3600; 
+                                const magnetRangeSq = isSameLane ? 90000 : 3600;
                                 if (distSq < magnetRangeSq) {
                                     if (!lm.getData('isMagneting')) {
                                         lm.setData('isMagneting', true);
@@ -253,10 +253,10 @@ export const GamePhaser: React.FC = () => {
 
                     // Emit HUD stats
                     const stats = this.horses.map(h => ({
-                         name: h.horseData.name,
-                         rank: h.horseData.rank,
-                         speed: h.horseData.speed,
-                         x: h.x
+                        name: h.horseData.name,
+                        rank: h.horseData.rank,
+                        speed: h.horseData.speed,
+                        x: h.x
                     }));
                     this.game.events.emit('UPDATE_HUD', stats);
 
@@ -338,7 +338,7 @@ export const GamePhaser: React.FC = () => {
 
             private prepareLuckyMoneyQueue() {
                 const values: number[] = [];
-                const quotas = GameConstants.GET_LUCKY_MONEY_QUOTAS(5); 
+                const quotas = GameConstants.GET_LUCKY_MONEY_QUOTAS(5);
                 GameConstants.LUCKY_MONEY_VALUES.forEach((val, idx) => {
                     const count = quotas[idx] || 0;
                     for (let i = 0; i < count; i++) values.push(val);
@@ -369,21 +369,21 @@ export const GamePhaser: React.FC = () => {
                 const totalLength = RacePath.SVG_END_X - RacePath.SVG_START_X;
                 const leader = this.getLeadingHorse();
                 const currentX = leader ? leader.x : RacePath.SVG_START_X;
-                
+
                 // Estimate leader progress (t: 0..1)
                 const leaderT = Phaser.Math.Clamp((currentX - RacePath.SVG_START_X) / totalLength, 0, 1);
-                
+
                 // Spawn slightly ahead of the leader (15% to 30% ahead)
                 const targetT = Phaser.Math.Clamp(leaderT + Phaser.Math.FloatBetween(0.15, 0.3), 0.1, 0.95);
-                
+
                 const path = RacePath.getPathForLane(laneIndex + 2);
                 const point = path.getPoint(targetT);
-                
+
                 if (!point) return;
 
                 const targetX = point.x;
                 const targetY = point.y;
-                
+
                 // Mimic Online Mode Drop Offsets
                 const startX = targetX + 250;
                 const startY = targetY - 600;
@@ -395,11 +395,11 @@ export const GamePhaser: React.FC = () => {
                 lm.setData('laneIndex', laneIndex);
                 lm.setData('isMagneting', false);
                 this.luckyMoneyGroup.add(lm);
-                
+
                 const particles = this.add.particles(0, 0, 'flare', {
                     speed: 100, scale: { start: 0.5, end: 0 }, blendMode: 'ADD', lifespan: 300, follow: lm
                 });
-                
+
                 this.tweens.add({
                     targets: lm, y: targetY, x: targetX, scale: 0.03, duration: 1500, ease: 'Bounce.easeOut', rotation: 720 * (Math.PI / 180),
                     onComplete: () => {
@@ -447,11 +447,11 @@ export const GamePhaser: React.FC = () => {
 
         // Bridge Phaser events to React
         game.events.on('UPDATE_HUD', (stats: any[]) => {
-             const now = Date.now();
-             if (now - lastUpdateRef.current > 100) {
-                 setRaceStats(stats);
-                 lastUpdateRef.current = now;
-             }
+            const now = Date.now();
+            if (now - lastUpdateRef.current > 100) {
+                setRaceStats(stats);
+                lastUpdateRef.current = now;
+            }
         });
 
         const handleRaceFinished = (e: any) => {
@@ -538,37 +538,37 @@ export const GamePhaser: React.FC = () => {
                             <span>Leaderboard</span>
                             <span>{raceStats.length} Horses</span>
                         </div>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {raceStats
                                 .sort((a, b) => b.x - a.x) // Sort by position (X)
                                 .map((h, idx) => (
-                                <div key={idx} style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    fontSize: isMobile ? '12px' : '14px',
-                                    color: 'white'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ 
-                                            color: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : '#888',
-                                            fontWeight: 'bold',
-                                            width: '20px'
-                                        }}>#{idx + 1}</span>
-                                        <span style={{ fontWeight: idx === 0 ? 'bold' : 'normal', color: idx === 0 ? '#fff' : '#ccc' }}>
-                                            {h.name}
-                                        </span>
-                                    </div>
-                                    <div style={{ 
-                                        color: h.speed > 80 ? '#00FF00' : '#aaa',
-                                        fontFamily: 'monospace',
-                                        fontWeight: 'bold'
+                                    <div key={idx} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontSize: isMobile ? '12px' : '14px',
+                                        color: 'white'
                                     }}>
-                                        {Math.floor(h.speed * 1.5)} km/h
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{
+                                                color: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : '#888',
+                                                fontWeight: 'bold',
+                                                width: '20px'
+                                            }}>#{idx + 1}</span>
+                                            <span style={{ fontWeight: idx === 0 ? 'bold' : 'normal', color: idx === 0 ? '#fff' : '#ccc' }}>
+                                                {h.name}
+                                            </span>
+                                        </div>
+                                        <div style={{
+                                            color: h.speed > 80 ? '#00FF00' : '#aaa',
+                                            fontFamily: 'monospace',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {Math.floor(h.speed * 1.5)} km/h
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </div>
                 </div>
@@ -584,7 +584,7 @@ export const GamePhaser: React.FC = () => {
                     <h1 style={{ color: '#FFD700', fontSize: isMobile ? '32px' : '50px', marginBottom: '10px', textShadow: '2px 2px 4px #000', textAlign: 'center' }}>
                         Đua ngựa lụm lì xì
                     </h1>
-                    
+
                     {/* Horse List */}
                     <div style={{
                         display: 'flex',
@@ -640,7 +640,7 @@ export const GamePhaser: React.FC = () => {
                         ))}
                     </div>
 
-                    <button 
+                    <button
                         onClick={handleStart}
                         style={{
                             padding: '15px 40px', fontSize: '24px', fontWeight: 'bold',
@@ -689,8 +689,8 @@ export const GamePhaser: React.FC = () => {
                                     border: p.rank === 1 ? '1px solid #FFD700' : 'none'
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '5px' : '10px' }}>
-                                        <span style={{ 
-                                            fontSize: isMobile ? '18px' : '24px', 
+                                        <span style={{
+                                            fontSize: isMobile ? '18px' : '24px',
                                             fontWeight: 'bold',
                                             color: p.rank === 1 ? '#FFD700' : p.rank === 2 ? '#C0C0C0' : p.rank === 3 ? '#CD7F32' : 'white',
                                             width: isMobile ? '25px' : '40px'
@@ -704,11 +704,11 @@ export const GamePhaser: React.FC = () => {
                                             🧧 {p.money ? p.money.toLocaleString() : 0}k
                                         </span>
                                         {p.rank === 1 && p.money > 0 && (
-                                            <span style={{ 
-                                                color: '#FFD700', 
-                                                fontWeight: 'bold', 
+                                            <span style={{
+                                                color: '#FFD700',
+                                                fontWeight: 'bold',
                                                 fontSize: isMobile ? '12px' : '14px',
-                                                animation: 'pulse 1s infinite' 
+                                                animation: 'pulse 1s infinite'
                                             }}>
                                                 (x2)
                                             </span>
@@ -717,8 +717,8 @@ export const GamePhaser: React.FC = () => {
                                 </div>
                             ))}
                     </div>
-                    <button 
-                        onClick={handleReset} 
+                    <button
+                        onClick={handleReset}
                         style={{
                             marginTop: isMobile ? '20px' : '30px',
                             padding: isMobile ? '10px 20px' : '12px 30px',
