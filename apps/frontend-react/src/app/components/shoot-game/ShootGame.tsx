@@ -7,9 +7,9 @@ export const ShootGame: React.FC = () => {
         { value: '2.000 VNĐ', percent: 15 },
         { value: '5.000 VNĐ', percent: 20 },
         { value: '10.000 VNĐ', percent: 20 },
-        { value: '20.000 VNĐ', percent: 15 },
+        { value: '20.000 VNĐ', percent: 20 },
         { value: '50.000 VNĐ', percent: 10 },
-        { value: '100.000 VNĐ', percent: 10 },
+        { value: '100.000 VNĐ', percent: 5 },
     ]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [result, setResult] = useState<{ totalScore: number; bestReward: string } | null>(null);

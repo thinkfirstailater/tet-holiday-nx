@@ -154,7 +154,9 @@ export const OnlineGamePhaser: React.FC<OnlineGamePhaserProps> = ({ socket, room
                 if (isMobile && isPortrait) {
                     // Mobile Portrait: Bottom Center
                     hudX = width / 2;
-                    hudY = height - 350; // Lift up more for better visibility
+                    // Flexible position: 85% of screen height (approx 15% from bottom)
+                    // This moves it down from the previous fixed position (height - 350)
+                    hudY = height * 0.80; 
                 } else {
                     // Desktop/Landscape: Bottom Right (Inside canvas)
                     hudX = width - 80;
