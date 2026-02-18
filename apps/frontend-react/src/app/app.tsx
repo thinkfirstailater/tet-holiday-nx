@@ -9,6 +9,7 @@ import styles from './app.module.css';
 
 import { ShakeGame } from './components/shake-game/ShakeGame';
 import { ShootGame } from './components/shoot-game/ShootGame';
+import { MoneyWheelGame } from './components/money-wheel/MoneyWheelGame';
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
         <Route path="/dua-ngua/join" element={<JoinPage />} />
         <Route path="/rung-hoa" element={<ShakeGame />} />
         <Route path="/ban-xi" element={<ShootGame />} />
+        <Route path="/xoay-tien" element={<MoneyWheelGame />} />
       </Routes>
     </div>
   );
